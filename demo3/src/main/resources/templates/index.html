@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" 
+ xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Product Management System</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
+        crossorigin="anonymous">
+
+</head>
+
+<body>
+
+    <!-- Create navigation bar(header) -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only>" Toggle navigation></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#" th:href="@{/}">Product List</a>
+            </div>
+
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li sec:authorize="isAuthenticated()">
+                        <a th:href="@{/logout}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </nav>
+
+    <br>
+    <br>
+    <br>
+
+
+    <div class="container my-2"><br><br>
+        <p style="color:rgb(30, 31, 32);
+        font-family:Verdana, Geneva, Tahoma, sans-serif;
+        font-size: 20px" >WELCOME_____<span sec:authentication="principal.username">User</span>
+            <br>
+            <span sec:authentication="principal.authorities">Roles</span>
+        </p>
+
+        <div class="">
+            <h1>
+                <p style="color:rgb(230, 67, 18) ;
+                        font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+                        font-size: 30px">PRODUCT   LIST
+            </h1>
+            </p>
+
+            <i>
+                <h5 id="message" style="text-align:center; color : brown;font-size: 20px" th:text="${message}"></h5>
+            </i>
+        </div>
+
+        <hr>
+        <div sec:authorize="hasAnyAuthority('ROLE_EDITOR','ROLE_ADMIN')">
+            <a th:href="@{/showNewProductForm}" class="btn btn-primary btn-sm mb-3">ADD PRODUCT </a>
+        </div>
+
+        <table border="1" class="table table-striped table-responsive-md">
+            <thead>
+                <tr>
+                    <th>
+                        <p style="color:rgb(21, 177, 216);
+                    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+                    font-size: 20px">Product Id</p>
+                    </th>
+
+
+                    <th>
+                        <a th:href="@{'/page/' + ${currentPage} + '?sortField=productName&sortDir=' + ${reverseSortDir}}"
+                        style="color:rgb(21, 177, 216); font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size: 20px">
+                            Product Name</a>
+                    </th>
+                    <th>
+                        <a th:href="@{'/page/' + ${currentPage} + '?sortField=brand&sortDir=' + ${reverseSortDir}}"
+                        style="color:rgb(21, 177, 216); font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size: 20px">
+                             Product Brand</a>
+                    </th>
+                    <th>
+                        <a th:href="@{'/page/' + ${currentPage} + '?sortField=price&sortDir=' + ${reverseSortDir}}"
+                        style="color:rgb(21, 177, 216); font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font-size: 20px">                        
+                         Product Price</a>
+                    </th>
+
+                   
+                    <div sec:authorize="hasAnyAuthority('ROLE_EDITOR','ROLE_ADMIN')">
+                        <th>
+                            <p style="color:rgb(21, 177, 216);
+                    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+                    font-size: 20px">Actions</p>
+                        </th>
+                    </div>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr th:each="product :${listProducts}">
+                    <td th:text="${product.id}">Product ID</td>
+                    <td th:text="${product.productName}">Name</td>
+                    <td th:text="${product.brand}">Brand</td>
+                    <td th:text="${product.price}">Price</td>
+                    <td>
+                        <div sec:authorize="hasAnyAuthority('ROLE_EDITOR','ROLE_ADMIN')">
+                            <a th:href="@{/showFormForUpdate/{id}(id=${product.id})}"
+                                onclick="return confirm('Are you sure! Do you want to update the product?')"
+                                class="btn btn-primary">update</a>
+                        </div>
+
+                        &nbsp;&nbsp;
+
+                        <div sec:authorize="hasAuthority('ROLE_ADMIN')">
+                            <a th:href="@{/DeleteProduct/{id}(id=${product.id})}"
+                                onclick="return confirm('Are you sure! Do you want to delete the product?')"
+                                class="btn btn-danger">Delete</a>
+                        </div>
+                        <script>
+                            function message_func(){
+                                setTimeout(function(){
+                                    document.getElementById("message").innerHTML="";
+                    
+                                },3000);
+                            }message_func()
+                        </script>
+
+                    </td>
+
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+
+
+        <div th:if="${totalPages > 1}">
+            <div class="row col-sm-10">
+                <div class="col-sm-2">
+                    Total Rows: [[${totalItems}]]
+                </div>
+                <div class="col-sm-1">
+                    <span th:each="i: ${#numbers.sequence(1, totalPages)}">
+                        <a th:if="${currentPage != i}"
+                            th:href="@{'/page/' + ${i}+ '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}">[[${i}]]</a>
+                        <span th:unless="${currentPage != i}">[[${i}]]</span> &nbsp; &nbsp;
+                    </span>
+                </div>
+                <div class="col-sm-1">
+                    <a th:if="${currentPage > FirstPage}"
+                        th:href="@{'/page/' + ${currentPage - 1}+ '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}">Prev</a>
+                    <span th:unless="${currentPage > FirstPage}">Prev</span>
+                </div>
+
+                <div class="col-sm-1">
+                    <a th:if="${currentPage < totalPages}"
+                        th:href="@{'/page/' + ${currentPage + 1}+ '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}">Next</a>
+                    <span th:unless="${currentPage < totalPages}">Next</span>
+                </div>
+                
+                <div class="col-sm-1">
+                    <a th:if="${currentPage < totalPages}"
+                        th:href="@{'/page/' + ${totalPages}+ '?sortField=' + ${sortField} + '&sortDir=' + ${sortDir}}">Last</a>
+                    <span th:unless="${currentPage < totalPages}">Last</span>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+    </div>
+    <script>
+    function message_func(){
+	setTimeout(function(){ 
+		document.getElementById("message").innerHTML = "";
+	}, 3000);
+    }
+    </script>
+
+</body>
+
+</html>
